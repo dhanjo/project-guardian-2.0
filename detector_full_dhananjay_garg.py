@@ -143,13 +143,13 @@ class FlixkartPIIDetector:
         return '[REDACTED]'
 
 def fix_malformed_json(json_str):
-    """Fix common JSON formatting issues"""
+
     import re
-    # Remove extra quotes at the end
+
     fixed = json_str.strip().rstrip('"')
-    # Fix unquoted values like: "status": pending -> "status": "pending"
+
     fixed = re.sub(r':\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*([,}])', r': "\1"\2', fixed)
-    # Fix unquoted dates like: "date": 2024-01-15 -> "date": "2024-01-15"
+
     fixed = re.sub(r':\s*(\d{4}-\d{2}-\d{2})\s*([,}])', r': "\1"\2', fixed)
     return fixed
 
