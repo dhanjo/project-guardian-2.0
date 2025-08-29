@@ -170,7 +170,7 @@ record_id,redacted_data_json,is_pii
 169,"{""load_balancer"": ""nginx"", ""upstream_servers"": 4}",False
 170,"{""passport"":""[REDACTED]"",""travel_history"":""USA,UAE,UK""}",True
 171,"{""last_name"": ""Patel"", ""blood_group"": ""O+""}",False
-172,{},False
+172,"{""aadhar"": ""45XXXXXXXX87"", ""document_uploaded"": 2024-01-15""}""",True
 173,"{""api_rate_limit"": 1000, ""current_usage"": 245}",False
 174,"{""name"":""AXXXXX VXXXX"",""email"":""aXXXXXXXXXXX@office.in"",""ip_address"":""[REDACTED]""}",True
 175,"{""database_connection"": ""mysql"", ""pool_size"": 20}",False
@@ -182,7 +182,7 @@ record_id,redacted_data_json,is_pii
 181,"{""message_queue"": ""rabbitmq"", ""queue_depth"": 150}",False
 182,"{""passport"":""[REDACTED]"",""diplomatic_status"":false}",True
 183,"{""last_name"": ""Yadav"", ""experience"": ""5 years""}",False
-184,{},False
+184,"{""aadhar"": ""56XXXXXXXX98"", ""address_change_request"": pending""}""",True
 185,"{""security_scan"": ""passed"", ""vulnerabilities_found"": 0}",False
 186,"{""name"":""RXXX SXXXX"",""phone"":""67XXXXXX45"",""email"":""rXXXXXXXXX@company.com""}",True
 187,"{""container_registry"": ""docker_hub"", ""image_version"": ""v1.2.3""}",False
@@ -204,7 +204,7 @@ record_id,redacted_data_json,is_pii
 203,"{""first_name"": ""Shalini"", ""favorite_color"": ""blue""}",False
 204,"{""name"":""RXXXX MXXXXXXX"",""address"":""[REDACTED]"",""phone"":""81XXXXXX90""}",True
 205,"{""jenkins_build"": ""successful"", ""build_number"": 156}",False
-206,{},False
+206,"{""passport"": ""[REDACTED]"", ""renewal_due"": 2025-06-15""}""",True
 207,"{""last_name"": ""Chopra"", ""shoe_size"": 9}",False
 208,"{""aadhar"":""78XXXXXXXX10"",""nomination_updated"":true}",True
 209,"{""terraform_state"": ""applied"", ""resources"": 23}",False

@@ -142,6 +142,71 @@ class FlixkartPIIDetector:
         
         return '[REDACTED]'
 
+def fix_malformed_json(json_str):
+    """Fix common JSON formatting issues"""
+    import re
+    # Remove extra quotes at the end
+    fixed = json_str.strip().rstrip('"')
+    # Fix unquoted values like: "status": pending -> "status": "pending"
+    fixed = re.sub(r':\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*([,}])', r': "\1"\2', fixed)
+    # Fix unquoted dates like: "date": 2024-01-15 -> "date": "2024-01-15"
+    fixed = re.sub(r':\s*(\d{4}-\d{2}-\d{2})\s*([,}])', r': "\1"\2', fixed)
+    return fixed
+
+def detect_pii_in_raw_string(raw_str):
+    """Detect PII in raw string when JSON parsing fails"""
+    detector = FlixkartPIIDetector()
+    # Check for phone numbers
+    if detector.phone_pattern.search(raw_str):
+        return True
+    # Check for aadhar numbers  
+    if detector.aadhar_pattern.search(raw_str):
+        return True
+    # Check for passport numbers
+    if detector.passport_pattern.search(raw_str):
+        return True
+    # Check for UPI IDs
+    if detector.upi_pattern.search(raw_str):
+        return True
+    # Check for emails
+    if detector.email_pattern.search(raw_str):
+        return True
+    return False
+
+def redact_pii_in_raw_string(raw_str):
+    """Redact PII in raw string when JSON parsing fails"""
+    import re
+    detector = FlixkartPIIDetector()
+    redacted = raw_str
+    
+    # Redact phone numbers
+    for match in detector.phone_pattern.finditer(raw_str):
+        phone = match.group()
+        if len(phone) == 10:
+            masked = f"{phone[:2]}XXXXXX{phone[-2:]}"
+        else:
+            masked = f"{phone[:2]}{'X' * (len(phone) - 4)}{phone[-2:]}"
+        redacted = redacted.replace(phone, masked)
+    
+    # Redact aadhar numbers
+    for match in detector.aadhar_pattern.finditer(raw_str):
+        aadhar = match.group()
+        clean_num = re.sub(r'[^\d]', '', aadhar)
+        if len(clean_num) == 12:
+            masked = f"{clean_num[:2]}XXXXXXXX{clean_num[-2:]}"
+            redacted = redacted.replace(aadhar, masked)
+    
+    # Redact passport numbers
+    redacted = detector.passport_pattern.sub('[REDACTED]', redacted)
+    
+    # Redact UPI IDs
+    redacted = detector.upi_pattern.sub('[REDACTED]', redacted)
+    
+    # Redact emails
+    redacted = detector.email_pattern.sub('[REDACTED]', redacted)
+    
+    return redacted
+
 def process_csv_file(input_file):
     detector = FlixkartPIIDetector()
     output_file = f"redacted_output_dhananjay_garg.csv"
@@ -168,7 +233,24 @@ def process_csv_file(input_file):
                             writer.writerow([record_id, '{}', False])
                             continue
                         
-                        data = json.loads(data_json)
+                        try:
+                            data = json.loads(data_json)
+                        except json.JSONDecodeError:
+                            # Try to fix common JSON issues
+                            fixed_json = fix_malformed_json(data_json)
+                            try:
+                                data = json.loads(fixed_json)
+                            except:
+                                # If still can't parse, scan the raw string for PII and redact it
+                                has_pii_raw = detect_pii_in_raw_string(data_json)
+                                if has_pii_raw:
+                                    pii_records += 1
+                                    redacted_raw = redact_pii_in_raw_string(data_json)
+                                    writer.writerow([record_id, redacted_raw, True])
+                                else:
+                                    writer.writerow([record_id, data_json, False])
+                                continue
+                        
                         has_pii, pii_fields = detector.detect_pii_in_record(data)
                         
                         if has_pii:
@@ -182,10 +264,6 @@ def process_csv_file(input_file):
                             writer.writerow([record_id, redacted_json, True])
                         else:
                             writer.writerow([record_id, data_json, False])
-                    
-                    except json.JSONDecodeError:
-                        writer.writerow([row.get('record_id', ''), '{}', False])
-                        continue
                     except Exception as e:
                         writer.writerow([row.get('record_id', ''), '{}', False])
                         continue
